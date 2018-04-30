@@ -1,6 +1,6 @@
 {
   "name": "jest-environment-webdriver",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Use Jest to run tests in Selenium WebDriver",
   "author": "Alexey Raspopov",
   "license": "MIT",

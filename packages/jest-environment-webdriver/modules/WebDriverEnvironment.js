@@ -1,7 +1,7 @@
 const NodeEnvironment = require('jest-environment-node');
 const chrome = require('selenium-webdriver/chrome');
 const firefox = require('selenium-webdriver/firefox');
-const { Builder, By, until } = require('selenium-webdriver');
+const { Builder, By, until, Capabilities } = require('selenium-webdriver');
 
 class WebDriverEnvironment extends NodeEnvironment {
   constructor(config) {
@@ -9,6 +9,7 @@ class WebDriverEnvironment extends NodeEnvironment {
     const options = config.testEnvironmentOptions || {};
     this.browserName = options.browser || 'chrome';
     this.headless = options.headless;
+    this.insecure = options.insecure;
     this.seleniumAddress = options.seleniumAddress || null;
   }
 
@@ -19,15 +20,25 @@ class WebDriverEnvironment extends NodeEnvironment {
     if (this.seleniumAddress) {
       driver = driver.usingServer(this.seleniumAddress);
     }
+
+    driver = driver.forBrowser(this.browserName);
+    let chromeOptions = new chrome.Options();
+    let firefoxOptions = new firefox.Options();
     if (this.headless) {
-      driver = await driver
-        .forBrowser(this.browserName)
-        .setChromeOptions(new chrome.Options().headless())
-        .setFirefoxOptions(new firefox.Options().headless())
-        .build();
-    } else {
-      driver = await driver.forBrowser(this.browserName).build();
+      chromeOptions = chromeOptions.headless();
+      firefoxOptions = firefoxOptions.headless();
     }
+
+    let caps = driver.getCapabilities();
+    if (this.insecure) {
+      caps.set('acceptInsecureCerts', true);
+    }
+
+    driver = await driver
+      .setChromeOptions(chromeOptions)
+      .setFirefoxOptions(firefoxOptions)
+      .withCapabilities(caps)
+      .build();
 
     this.driver = driver;
 
